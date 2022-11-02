@@ -283,6 +283,7 @@ for i in range(0, 1280, m):
 
 pointvisx =[]
 pointvisy =[]
+visibility_bool = []
 vidimost = []
 for i in range(0,int(720/n)):
     for j in range(0,int(1280/m)):
@@ -290,16 +291,49 @@ for i in range(0,int(720/n)):
             pointvisx.append(j*n)
             pointvisy.append(i*m)
             vidimost.append(0)
+            visibility_bool.append(0)
             canvas_marker = Canvas(tk, width=5, height=5)
             # canvas_marker.create_rectangle(0, 0, 5, 5, fill='pink', width=0, outline='black')
             # canvas_marker.place(x=j*n, y=i*m,anchor=CENTER)
-for i in range(4):
+
+# for i in range(4):
+#     points = []
+#     calculating_visibility(coord_mayak[i][0], coord_mayak[i][1], 300, edge_lines, points)
+#     points = sorted(points, key=lambda x: x.line_angle)
+#     for j in range(len(pointvisx)):
+#         visibility_bool[j] = 0
+#         for g in range(len(points) - 1):
+#             vis_condition1 = (points[g].x - pointvisx[j]) * (points[g + 1].y - points[g].y) - \
+#                              (points[g + 1].x - points[g].x) * (points[g].y - pointvisy[j])
+#             vis_condition2 = (points[g + 1].x - pointvisx[j]) * (coord_mayak[i][1] - points[g + 1].y) - \
+#                              (coord_mayak[i][0] - points[g + 1].x) * (points[g + 1].y - pointvisy[j])
+#             vis_condition3 = (pointvisx[j] - coord_mayak[i][0]) * (points[g].y - pointvisy[j]) - \
+#                              (points[g].x - pointvisx[j]) * (pointvisy[j] - coord_mayak[i][1])
+#             if (vis_condition1 >= 0) & (vis_condition2 >= 0) & (vis_condition3 >= 0):
+#                 visibility_bool[j] = visibility_bool[j] + 1
+#         vis_condition1 = (points[len(points) - 1].x - pointvisx[j]) * (
+#                           points[0].y - points[len(points) - 1].y) - \
+#                          (points[0].x - points[len(points) - 1].x) * (points[len(points) - 1].y - pointvisy[j])
+#         vis_condition2 = (points[0].x - pointvisx[j]) * (coord_mayak[i][1] - points[0].y) - \
+#                          (coord_mayak[i][0] - points[0].x) * (points[0].y - pointvisy[j])
+#         vis_condition3 = (coord_mayak[i][0] - pointvisx[j]) * (
+#                           points[len(points) - 1].y - coord_mayak[i][1]) - \
+#                          (points[len(points) - 1].x - coord_mayak[i][0]) * (
+#                           coord_mayak[i][1] - pointvisy[j])
+#         if (vis_condition1 >= 0) & (vis_condition2 >= 0) & (vis_condition3 >= 0):
+#             visibility_bool[j] = visibility_bool[j] + 1
+#         if visibility_bool[j] > 0:
+#             vidimost[j] += 1
+#             visibility_bool[j] = 0
+
+for i in range(1):
     points = []
     calculating_visibility(coord_mayak[i][0], coord_mayak[i][1], 300, edge_lines, points)
-    for j in range(len(pointvisx)):
-        visibility_bool = 0
-        for g in range(len(points) - 1):
-            visibility_bool = 0
+    points = sorted(points, key=lambda x: x.line_angle)
+    for g in range(len(points) - 1):
+        visibility_bool[j] = 0
+        for j in range(len(pointvisx)):
+            visibility_bool[j] = 0
             vis_condition1 = (points[g].x - pointvisx[j]) * (points[g + 1].y - points[g].y) - \
                              (points[g + 1].x - points[g].x) * (points[g].y - pointvisy[j])
             vis_condition2 = (points[g + 1].x - pointvisx[j]) * (coord_mayak[i][1] - points[g + 1].y) - \
@@ -307,30 +341,17 @@ for i in range(4):
             vis_condition3 = (pointvisx[j] - coord_mayak[i][0]) * (points[g].y - pointvisy[j]) - \
                              (points[g].x - pointvisx[j]) * (pointvisy[j] - coord_mayak[i][1])
             if (vis_condition1 >= 0) & (vis_condition2 >= 0) & (vis_condition3 >= 0):
-                visibility_bool = visibility_bool + 1
-
-        if visibility_bool > 0:
-            vidimost[j] += 1
-
-
-
-for i in range(4):
-    points = []
-    calculating_visibility(coord_mayak[i][0], coord_mayak[i][1], 300, edge_lines, points)
-    for j in range(len(pointvisx)):
-        visibility_bool = 0
+                vidimost[j] += 1
         vis_condition1 = (points[len(points) - 1].x - pointvisx[j]) * (
-                    points[0].y - points[len(points) - 1].y) - \
+                          points[0].y - points[len(points) - 1].y) - \
                          (points[0].x - points[len(points) - 1].x) * (points[len(points) - 1].y - pointvisy[j])
         vis_condition2 = (points[0].x - pointvisx[j]) * (coord_mayak[i][1] - points[0].y) - \
                          (coord_mayak[i][0] - points[0].x) * (points[0].y - pointvisy[j])
         vis_condition3 = (coord_mayak[i][0] - pointvisx[j]) * (
-                points[len(points) - 1].y - coord_mayak[i][1]) - \
+                          points[len(points) - 1].y - coord_mayak[i][1]) - \
                          (points[len(points) - 1].x - coord_mayak[i][0]) * (
-                                 coord_mayak[i][1] - pointvisy[j])
-        if ((vis_condition1 >= 0) & (vis_condition2 >= 0) & (vis_condition3 >= 0)):
-            visibility_bool = visibility_bool + 1
-        if visibility_bool > 0:
+                          coord_mayak[i][1] - pointvisy[j])
+        if (vis_condition1 >= 0) & (vis_condition2 >= 0) & (vis_condition3 >= 0):
             vidimost[j] += 1
 
 for j in range(len(pointvisx)):
