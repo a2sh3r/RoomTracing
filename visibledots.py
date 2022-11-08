@@ -117,11 +117,11 @@ def calculating_visibility(ox, oy, radius, edge_lines, points):
             for k in range(3):
                 # setup angles
                 if k == 0:
-                    ang = base_ang - 0.001
+                    ang = base_ang - 0.01
                 if k == 1:
                     ang = base_ang
                 if k == 2:
-                    ang = base_ang + 0.001
+                    ang = base_ang + 0.01
                 # creating ray
                 rdx = float(radius * math.cos(ang))
                 rdy = float(radius * math.sin(ang))
@@ -145,7 +145,6 @@ def calculating_visibility(ox, oy, radius, edge_lines, points):
                 line = VisibleLines(min_ang, min_px, min_py)
                 points.append(line)
     points = sorted(points, key=lambda x: x.line_angle)
-
 
 
 # Tkinter setup
@@ -184,7 +183,7 @@ canvas.create_line((ls[0]), (ls[1]), (ls[2]), (ls[3]), width=3, fill='black')
 canvas.create_line(le[0], le[1], (le[2]), (le[3]), width=3, fill='black')
 
 # Marker setups
-coord_mayak = [[10,10],[1270,10],[10,710],[1270,710]]
+coord_mayak = [[20,20],[1270,10],[10,710],[1270,710]]
 
 marker_coordinates = [200-5, 220-5]
 
@@ -216,16 +215,17 @@ canvas.create_line((ww.sx), (ww.sy), (ww.ex), (ww.ey), width=3, fill='black')
 canvas.create_line((sw.sx), (sw.sy), (sw.ex), (sw.ey), width=3, fill='black')
 canvas.create_line((ew.sx), (ew.sy), (ew.ex), (ew.ey), width=3, fill='black')
 
-ne = Edges(0, 0, 1281, 0)
-we = Edges(0, 0, 0, 721)
-se = Edges(0, 721, 1281, 721)
-ee = Edges(1281, 721, 1281, 0)
+ne = Edges(0, 0, 1280, 0)
+we = Edges(0, 0, 0, 720)
+se = Edges(0, 720, 1280, 720)
+ee = Edges(1280, 720, 1280, 0)
 
 edge_lines = [ne, we, se, ee, nw, ww, sw, ew]
-# points = []
-#
-# calculating_visibility(marker_coordinates[0], marker_coordinates[1], 300, edge_lines, points)
-# points = sorted(points, key=lambda x: x.line_angle)
+points = []
+
+calculating_visibility(marker_coordinates[0], marker_coordinates[1], 300, edge_lines, points)
+
+points = sorted(points, key=lambda x: x.line_angle)
 
 # target_angle = math.atan2(target_coordinates[1]-marker_coordinates[1], target_coordinates[0]-marker_coordinates[0])
 # print(target_angle)
@@ -280,9 +280,9 @@ for i in range(0, 720, n):
     canvas.create_line(0, i, 1280, i)
 for i in range(0, 1280, m):
     canvas.create_line(i, 0, i, 720)
-points = []
-pointvisx = []
-pointvisy = []
+
+pointvisx =[]
+pointvisy =[]
 vidimost = []
 for i in range(0,int(720/n)):
     for j in range(0,int(1280/m)):
@@ -293,28 +293,38 @@ for i in range(0,int(720/n)):
             canvas_marker = Canvas(tk, width=5, height=5)
             # canvas_marker.create_rectangle(0, 0, 5, 5, fill='pink', width=0, outline='black')
             # canvas_marker.place(x=j*n, y=i*m,anchor=CENTER)
-
 for i in range(4):
     points = []
-    points.clear()
     calculating_visibility(coord_mayak[i][0], coord_mayak[i][1], 300, edge_lines, points)
     points = sorted(points, key=lambda x: x.line_angle)
     for j in range(len(pointvisx)):
-        visibility_bool = 0
+        visibility_bool = False
         for g in range(len(points) - 1):
-            visibility_bool = 0
+            # triangle = canvas.create_line(coord_mayak[i][0], coord_mayak[i][1], points[g].x, points[g].y,
+            #                                   width=1,
+            #                                   fill='green')
+
             vis_condition1 = (points[g].x - pointvisx[j]) * (points[g + 1].y - points[g].y) - \
                              (points[g + 1].x - points[g].x) * (points[g].y - pointvisy[j])
             vis_condition2 = (points[g + 1].x - pointvisx[j]) * (coord_mayak[i][1] - points[g + 1].y) - \
                              (coord_mayak[i][0] - points[g + 1].x) * (points[g + 1].y - pointvisy[j])
             vis_condition3 = (coord_mayak[i][0] - pointvisx[j]) * (points[g].y - coord_mayak[i][1]) - \
                              (points[g].x - coord_mayak[i][0]) * (coord_mayak[i][1] - pointvisy[j])
-            if (vis_condition1 >= 0) & (vis_condition2 >= 0) & (vis_condition3 >= 0) or ((vis_condition1 < 0) & (vis_condition2 < 0) & (vis_condition3 < 0)):
-                visibility_bool += 1
+            if ((vis_condition1 >= 0) & (vis_condition2 >= 0) & (vis_condition3 >= 0)) or ((vis_condition1 < 0) & (vis_condition2 < 0) & (vis_condition3 < 0)):
+                visibility_bool = True
 
-        if visibility_bool > 0:
+
+
+        if visibility_bool == True:
             vidimost[j] += 1
 
+
+ # vis_condition1 = (points[i].x - target_coordinates[0]) * (points[i+1].y - points[i].y) - \
+#                      (points[i+1].x - points[i].x) * (points[i].y - target_coordinates[1])
+#     vis_condition2 = (points[i+1].x - target_coordinates[0]) * (marker_coordinates[1] - points[i+1].y) - \
+#                      (marker_coordinates[0] - points[i+1].x) * (points[i+1].y - target_coordinates[1])
+#     vis_condition3 = (marker_coordinates[0] - target_coordinates[0]) * (points[i].y - marker_coordinates[1]) - \
+#                      (points[i].x - marker_coordinates[0]) * (marker_coordinates[1] - target_coordinates[1])
 
 # for i in range(1):
 #     points = []
@@ -331,17 +341,18 @@ for i in range(4):
 #                 points[len(points) - 1].y - coord_mayak[i][1]) - \
 #                          (points[len(points) - 1].x - coord_mayak[i][0]) * (
 #                                  coord_mayak[i][1] - pointvisy[j])
-#         if ((vis_condition1 >= 0) & (vis_condition2 >= 0) & (vis_condition3 >= 0)):
+#         if ((vis_condition1 >= 0) & (vis_condition2 >= 0) & (vis_condition3 >= 0)) or ((vis_condition1 < 0) & (vis_condition2 < 0) & (vis_condition3 < 0)):
 #             visibility_bool = visibility_bool + 1
 #         if visibility_bool > 0:
 #             vidimost[j] += 1
 
 for j in range(len(pointvisx)):
     print(str(j), ' - ', vidimost[j], pointvisx[j], pointvisy[j])
-    if vidimost[j] > 0:
+    if vidimost[j] > 2:
         canvas_vidim = Canvas(tk, width=5, height=5)
         canvas_vidim.create_rectangle(0, 0, 5, 5, fill='green', width=10, outline='green')
         canvas_vidim.place(x=pointvisx[j], y=pointvisy[j],anchor=CENTER)
+
 canvas.pack()
 
 tk.mainloop()
