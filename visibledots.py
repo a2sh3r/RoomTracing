@@ -1,8 +1,78 @@
 import math
 from tkinter import *
 import numpy as np
+from sympy import *
+import random as random
+from sklearn.preprocessing import StandardScaler
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+def fx_dal(x0,x_sat):
+    '''
+    Вектор функциональной связи между наблюдениями и координатами объекта
+    :param x0:
+    :param x_sat:
+    :return:
+    '''
+    r= np.zeros((len(list(x_sat))))
+    for i in range(len(list(x_sat))):
+      r[i]=np.sqrt((x0[0]-x_sat[i][0])**2+(x0[1]-x_sat[i][1])**2)
+    return r
+def Hx_dal(x_prev,x_sat):
+    '''
+    Градиентная матрица
+    :param x_prev:
+    :param x_sat:
+    :return:
+    '''
+    #ДАЛЬНОМЕРНЫЙ
+    H = np.zeros((len(list(x_sat)), 2))
+    for i in range(len(list(x_sat))):
+        H[i][0] = -(x_sat[i][0] - x_prev[0]) / np.sqrt((x_prev[0]-x_sat[i][0])**2+(x_prev[1]-x_sat[i][1])**2)
+        H[i][1] = -(x_sat[i][1] - x_prev[1]) / np.sqrt((x_prev[0]-x_sat[i][0])**2+(x_prev[1]-x_sat[i][1])**2)
+
+    return H
+
+def descent_process(R,x_sat,x_prev, Hx, fxx):
+    '''
+    Итерация градиентного спуска (процесс)
+    :param R: наблюдения
+    :param x_sat: координаты спутников (якорей)
+    :param x_prev: оценка координат объекта на k-1 итерации
+    :return: оценка координат объекта на k итерации
+    '''
 
 
+    a = np.linalg.inv(np.dot(Hx(x_prev,x_sat).T, Hx(x_prev,x_sat)))
+    b = Hx(x_prev,x_sat).T
+    c  = R - fxx(x_prev,x_sat)
+    x_new = x_prev + np.dot(a,np.dot(b,c))
+    return x_new
+
+def Gradient_descent(R,x_sat, Hx, fx, x_prev=np.array([0.1,0.1]),epsilon=0.1):
+    '''
+    Алгоритм градиентного спуска
+    :param R: наблюдения
+    :param x_sat: координаты спутников (якорей)
+    :param x_prev: начальные условия по координатам
+    :param epsilon: критерий остановы
+    :param show_plots: показать графики
+    :return: оценка координат
+    '''
+    history = []
+    i = 1
+    while True:
+        x_new = descent_process(R,x_sat,x_prev, Hx, fx)
+        #print(f'x_est объекта на {i} итерации равен {x_new}')
+        Euc =  np.sqrt((x_new[0]-x_prev[0])**2+(x_new[1]-x_prev[1])**2)
+        history.append(Euc)
+        if Euc<=epsilon:
+            #print('\nОстановка расчета!')
+            winner= x_new
+            break
+        i+=1
+        x_prev = x_new.copy()
+
+    return winner
 class Edges:
     edges_count = 0
 
@@ -164,16 +234,6 @@ le = [1280, 720, 1280, 0]  # EAST LINE
 
 # Generating simple room
 canvas = Canvas(tk, bg='white', width=1280, height=720)
-canvas_marker = Canvas(tk, width=10, height=10)
-canvas_marker.create_rectangle(0, 0, 10, 10, fill='black', width=0, outline='black')
-canvas_marker1 = Canvas(tk, width=10, height=10)
-canvas_marker1.create_rectangle(0, 0, 10, 10, fill='black', width=0, outline='black')
-canvas_marker2 = Canvas(tk, width=10, height=10)
-canvas_marker2.create_rectangle(0, 0, 10, 10, fill='black', width=0, outline='black')
-canvas_marker3 = Canvas(tk, width=10, height=10)
-canvas_marker3.create_rectangle(0, 0, 10, 10, fill='black', width=0, outline='black')
-canvas_target = Canvas(tk, width=10, height=10)
-canvas_target.create_rectangle(0, 0, 10, 10, fill='gray', width=0, outline='gray')
 
 canvas.old_coords = None
 
@@ -183,27 +243,29 @@ canvas.create_line((ls[0]), (ls[1]), (ls[2]), (ls[3]), width=3, fill='black')
 canvas.create_line(le[0], le[1], (le[2]), (le[3]), width=3, fill='black')
 
 # Marker setups
-coord_mayak = [[20,20],[1270,10],[10,710],[1270,710]]
+coord_mayak = [[10,10],[1270,10],[10,700],[1270,700]]
+
+
 
 marker_coordinates = [200-5, 220-5]
 
-canvas_marker.place(x=coord_mayak[0][0], y=coord_mayak[0][1])
-canvas_marker1.place(x=coord_mayak[1][0], y=coord_mayak[1][1])
-canvas_marker2.place(x=coord_mayak[2][0], y=coord_mayak[2][1])
-canvas_marker3.place(x=coord_mayak[3][0], y=coord_mayak[3][1])
+# canvas_marker.place(x=coord_mayak[0][0], y=coord_mayak[0][1])
+# canvas_marker1.place(x=coord_mayak[1][0], y=coord_mayak[1][1])
+# canvas_marker2.place(x=coord_mayak[2][0], y=coord_mayak[2][1])
+# canvas_marker3.place(x=coord_mayak[3][0], y=coord_mayak[3][1])
 
 
 # Target Setup
 # canvas_target.place(x=970-5, y=310-5)
 target_coordinates = [970-5, 310-5]
 
-canvas_marker.bind('<B1-Motion>', drag)
-canvas_marker1.bind('<B1-Motion>', drag)
-canvas_marker2.bind('<B1-Motion>', drag)
-canvas_marker3.bind('<B1-Motion>', drag)
-canvas_target.bind('<B1-Motion>', drag2)
-canvas.bind('<Button-2>', mmotion)
-canvas.bind('<Button-3>', edges_print)
+# canvas_marker.bind('<B1-Motion>', drag)
+# canvas_marker1.bind('<B1-Motion>', drag)
+# canvas_marker2.bind('<B1-Motion>', drag)
+# canvas_marker3.bind('<B1-Motion>', drag)
+# canvas_target.bind('<B1-Motion>', drag2)
+# canvas.bind('<Button-2>', mmotion)
+# canvas.bind('<Button-3>', edges_print)
 
 #координаты коробки в центре и её отрисовка
 nw = Edges(480, 500, 800, 500)
@@ -215,10 +277,10 @@ canvas.create_line((ww.sx), (ww.sy), (ww.ex), (ww.ey), width=3, fill='black')
 canvas.create_line((sw.sx), (sw.sy), (sw.ex), (sw.ey), width=3, fill='black')
 canvas.create_line((ew.sx), (ew.sy), (ew.ex), (ew.ey), width=3, fill='black')
 
-ne = Edges(0, 0, 1280, 0)
-we = Edges(0, 0, 0, 720)
-se = Edges(0, 720, 1280, 720)
-ee = Edges(1280, 720, 1280, 0)
+ne = Edges(-1, -1, 1281, -1)
+we = Edges(-1, -1, -1, 721)
+se = Edges(-1, 721, 1281, 721)
+ee = Edges(1281, 721, 1281, -1)
 
 edge_lines = [ne, we, se, ee, nw, ww, sw, ew]
 points = []
@@ -284,15 +346,18 @@ for i in range(0, 1280, m):
 pointvisx =[]
 pointvisy =[]
 vidimost = []
+R_dal = []
 for i in range(0,int(720/n)):
     for j in range(0,int(1280/m)):
         if not((j*n<=nw.ex) and (j*n>=nw.sx) and (i*m<=ew.ey) and (i*m>=ew.sy)):
             pointvisx.append(j*n)
             pointvisy.append(i*m)
+            R_dal.append(0)
             vidimost.append(0)
             canvas_marker = Canvas(tk, width=5, height=5)
             # canvas_marker.create_rectangle(0, 0, 5, 5, fill='pink', width=0, outline='black')
             # canvas_marker.place(x=j*n, y=i*m,anchor=CENTER)
+bool_number_mayak = np.zeros((len(pointvisx),4))
 for i in range(4):
     points = []
     calculating_visibility(coord_mayak[i][0], coord_mayak[i][1], 300, edge_lines, points)
@@ -312,11 +377,34 @@ for i in range(4):
                              (points[g].x - coord_mayak[i][0]) * (coord_mayak[i][1] - pointvisy[j])
             if ((vis_condition1 >= 0) & (vis_condition2 >= 0) & (vis_condition3 >= 0)) or ((vis_condition1 < 0) & (vis_condition2 < 0) & (vis_condition3 < 0)):
                 visibility_bool = True
+        vis_condition1 = (points[len(points) - 1].x - pointvisx[j]) * (
+                                points[0].y - points[len(points) - 1].y) - \
+                                     (points[0].x - points[len(points) - 1].x) * (points[len(points) - 1].y - pointvisy[j])
+        vis_condition2 = (points[0].x - pointvisx[j]) * (coord_mayak[i][1] - points[0].y) - \
+                         (coord_mayak[i][0] - points[0].x) * (points[0].y - pointvisy[j])
+        vis_condition3 = (coord_mayak[i][0] - pointvisx[j]) * (
+                points[len(points) - 1].y - coord_mayak[i][1]) - \
+                         (points[len(points) - 1].x - coord_mayak[i][0]) * (
+                                 coord_mayak[i][1] - pointvisy[j])
+        if ((vis_condition1 >= 0) & (vis_condition2 >= 0) & (vis_condition3 >= 0)) or ((vis_condition1 < 0) & (vis_condition2 < 0) & (vis_condition3 < 0)):
+            visibility_bool = True
 
 
 
         if visibility_bool == True:
             vidimost[j] += 1
+            bool_number_mayak[j][i] = 1
+
+number_mayak = []
+for j in range(len(pointvisx)):
+    number_mayak.append([])
+    add_mayak = []
+    for i in range(4):
+        if bool_number_mayak[j][i] == 1:
+            add_mayak.append(i)
+    number_mayak[j] = add_mayak
+
+# теперь number_mayak содержит в j элементе какие маяки видят j-тую точку комнаты
 
 
  # vis_condition1 = (points[i].x - target_coordinates[0]) * (points[i+1].y - points[i].y) - \
@@ -345,14 +433,80 @@ for i in range(4):
 #             visibility_bool = visibility_bool + 1
 #         if visibility_bool > 0:
 #             vidimost[j] += 1
+q = 3 #необходимое кол-во видимых маяков
+pointnecx = [] #координаты точек, видимых q кол-вом маяков
+pointnecy = []
+
+coord_mayak_2 = []
+winner_1 = []
+Hx_dots = []
+geom_f = []
+for i in range(len(pointvisx)):
+    coord_mayak_2.append([])
+    for j in number_mayak[i]:
+        coord_mayak_2[i].append(coord_mayak[j])
+
+    R_dal[i] = fx_dal([pointvisx[i],pointvisy[i]], coord_mayak_2[i])
+    Hx_dots = Hx_dal([pointvisx[i],pointvisy[i]], coord_mayak_2[i])
+    multi = np.dot(Hx_dots.T,Hx_dots)
+    inv_Hx = np.linalg.inv(multi)
+    geom_f.append(sqrt(np.trace(inv_Hx)))
 
 for j in range(len(pointvisx)):
-    print(str(j), ' - ', vidimost[j], pointvisx[j], pointvisy[j])
-    if vidimost[j] > 2:
-        canvas_vidim = Canvas(tk, width=5, height=5)
-        canvas_vidim.create_rectangle(0, 0, 5, 5, fill='green', width=10, outline='green')
+    print(str(j), ' - ', vidimost[j], 'X: ',pointvisx[j],'Y: ', pointvisy[j], 'Number_Mayak: ',number_mayak[j],'Geom_Factor: ', geom_f[j] )
+    if vidimost[j] == 1:
+        canvas_vidim = Canvas(tk, width=10, height=10)
+        canvas_vidim.create_rectangle(0, 0, 10, 10, fill='red')
         canvas_vidim.place(x=pointvisx[j], y=pointvisy[j],anchor=CENTER)
+    if vidimost[j] == 2:
+        canvas_vidim = Canvas(tk, width=10, height=10)
+        canvas_vidim.create_rectangle(0, 0, 10, 10, fill='yellow')
+        canvas_vidim.place(x=pointvisx[j], y=pointvisy[j],anchor=CENTER)
+    if vidimost[j] == 3:
+        canvas_vidim = Canvas(tk, width=10, height=10)
+        canvas_vidim.create_rectangle(0, 0, 10, 10, fill='green')
+        canvas_vidim.place(x=pointvisx[j], y=pointvisy[j],anchor=CENTER)
+    if vidimost[j] == 4:
+        canvas_vidim = Canvas(tk, width=10, height=10)
+        canvas_vidim.create_rectangle(0, 0, 10, 10, fill='purple')
+        canvas_vidim.place(x=pointvisx[j], y=pointvisy[j],anchor=CENTER)
+    # if vidimost[j] == q:
+    #     canvas_vidim = Canvas(tk, width=10, height=10)
+    #     canvas_vidim.create_rectangle(0, 0, 10, 10, fill='green')
+    #     canvas_vidim.place(x=pointvisx[j], y=pointvisy[j],anchor=CENTER)
+    #     # pointnecx.append(pointvisx)
+    #     # pointnecy.append(pointvisy)
+# print(R_dal[40])
+# print(R_dal[160])
+
+canvas_marker = Canvas(tk, width=15, height=15)
+canvas_marker.create_rectangle(1, 1,15,15, fill='black', width=1, outline='red')
+canvas_marker1 = Canvas(tk, width=15, height=15)
+canvas_marker1.create_rectangle(1, 1, 15, 15, fill='black', width=1, outline='red')
+canvas_marker2 = Canvas(tk, width=15, height=15)
+canvas_marker2.create_rectangle(1, 1, 15, 15, fill='black', width=1, outline='red')
+canvas_marker3 = Canvas(tk, width=15, height=15)
+canvas_marker3.create_rectangle(1, 1, 15, 15, fill='black', width=1, outline='red')
+canvas_target = Canvas(tk, width=15, height=15)
+canvas_target.create_rectangle(0, 0, 10, 10, fill='gray', width=0, outline='gray')
+
+canvas_marker.place(x=coord_mayak[0][0], y=coord_mayak[0][1],anchor= CENTER)
+canvas_marker1.place(x=coord_mayak[1][0], y=coord_mayak[1][1],anchor= CENTER)
+canvas_marker2.place(x=coord_mayak[2][0], y=coord_mayak[2][1],anchor= CENTER)
+canvas_marker3.place(x=coord_mayak[3][0], y=coord_mayak[3][1],anchor= CENTER)
 
 canvas.pack()
 
+fig = plt.figure(figsize = (12,8))
+ax = plt.axes(projection = "3d")
+
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('Г')
+
+ax.scatter(pointvisx, pointvisy, geom_f, s=1)
+
+plt.show()
+
 tk.mainloop()
+
