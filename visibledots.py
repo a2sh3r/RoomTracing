@@ -30,83 +30,6 @@ class VisibleLines:
         VisibleLines.lines_count += 1
 
 
-def mmotion(event):
-    x, y = (event.x//n)*n, (event.y//m)*m
-    x1, y1 = None, None
-    if canvas.old_coords:
-        x1, y1 = canvas.old_coords
-        canvas.create_line(x, y, x1, y1, width=5, fill='black')
-    canvas.old_coords = x, y
-    if (x1):
-        edge_lines.append(Edges(x, y, x1, y1))
-        canvas.old_coords = None
-
-
-def edges_print(event):
-    for i in edge_lines:
-        print(i.sx, i.sy, i.ex, i.ey)
-
-
-def drag(event):
-    points = []
-    visibility_bool = 0
-    mouse_x = ((canvas.winfo_pointerx() - canvas.winfo_rootx())//n)*n
-    mouse_y = ((canvas.winfo_pointery() - canvas.winfo_rooty())//m)*m
-    marker_coordinates = [mouse_x, mouse_y]
-    event.widget.place(x=mouse_x, y=mouse_y, anchor=CENTER)
-    calculating_visibility(marker_coordinates[0], marker_coordinates[1], 300, edge_lines, points)
-    points = sorted(points, key=lambda x: x.line_angle)
-    if (triangles):
-        for i in range(len(triangles)):
-            canvas.delete(triangles[i])
-    triangles.clear()
-    for i in range(len(points) - 1):
-        print(points[i].line_angle, points[i].x, points[i].y, points[i + 1].line_angle, points[i + 1].x,
-              points[i + 1].y)
-        triangle = canvas.create_polygon(marker_coordinates[0], marker_coordinates[1], points[i].x, points[i].y,
-                                         points[i + 1].x, points[i + 1].y, width=1,
-                                         fill='green')
-        vis_condition1 = (points[i].x - target_coordinates[0]) * (points[i + 1].y - points[i].y) - \
-                         (points[i + 1].x - points[i].x) * (points[i].y - target_coordinates[1])
-        vis_condition2 = (points[i + 1].x - target_coordinates[0]) * (marker_coordinates[1] - points[i + 1].y) - \
-                         (marker_coordinates[0] - points[i + 1].x) * (points[i + 1].y - target_coordinates[1])
-        vis_condition3 = (marker_coordinates[0] - target_coordinates[0]) * (points[i].y - marker_coordinates[1]) - \
-                         (points[i].x - marker_coordinates[0]) * (marker_coordinates[1] - target_coordinates[1])
-        if (vis_condition1 >= 0) & (vis_condition2 >= 0) & (vis_condition3 >= 0):
-            visibility_bool = visibility_bool + 1
-        triangles.append(triangle)
-    triangle = canvas.create_polygon(marker_coordinates[0], marker_coordinates[1], points[len(points) - 1].x,
-                                     points[len(points) - 1].y, points[0].x, points[0].y, width=1,
-                                     fill='green')
-    vis_condition1 = (points[len(points) - 1].x - target_coordinates[0]) * (points[0].y - points[len(points) - 1].y) - \
-                     (points[0].x - points[len(points) - 1].x) * (points[len(points) - 1].y - target_coordinates[1])
-    vis_condition2 = (points[0].x - target_coordinates[0]) * (marker_coordinates[1] - points[0].y) - \
-                     (marker_coordinates[0] - points[0].x) * (points[0].y - target_coordinates[1])
-    vis_condition3 = (marker_coordinates[0] - target_coordinates[0]) * (
-                      points[len(points) - 1].y - marker_coordinates[1]) - \
-                     (points[len(points) - 1].x - marker_coordinates[0]) * (
-                                 marker_coordinates[1] - target_coordinates[1])
-    if (vis_condition1 >= 0) & (vis_condition2 >= 0) & (vis_condition3 >= 0):
-        visibility_bool = visibility_bool + 1
-    triangles.append(triangle)
-    if visibility_bool > 0:
-        canvas_target.create_rectangle(0, 0, 10, 10, fill='green', width=0, outline='green')
-    else:
-        canvas_target.create_rectangle(0, 0, 10, 10, fill='red', width=0, outline='red')
-    visibility_bool = 0
-    # for i in range(0, 720, n):
-    #     canvas.create_line(0, i, 1280, i)
-    # for i in range(0, 1280, m):
-    #     canvas.create_line(i, 0, i, 720)
-
-
-def drag2(event):
-    mouse_x = ((canvas.winfo_pointerx() - canvas.winfo_rootx()) // n) * n
-    mouse_y = ((canvas.winfo_pointery() - canvas.winfo_rooty()) // m) * m
-    global target_coordinates
-    target_coordinates = [mouse_x, mouse_y]
-    event.widget.place(x=mouse_x, y=mouse_y, anchor=CENTER)
-
 
 def calculating_visibility(ox, oy, radius, edge_lines, points):
     points.clear()
@@ -159,8 +82,8 @@ tk.title('Mark Casting')
 tk.geometry('1280x720')
 tk.resizable(False, False)
 
-n = 20
-m = 20
+n = 40
+m = 40
 
 # 1 in code == 1 sm
 ln = [0, 0, 1280, 0]     # NORTH LINE
@@ -179,29 +102,17 @@ canvas.create_line((ls[0]), (ls[1]), (ls[2]), (ls[3]), width=3, fill='black')
 canvas.create_line(le[0], le[1], (le[2]), (le[3]), width=3, fill='black')
 
 # Marker setups
-# coord_mayak = [[10,10],[1270,10],[10,700],[1270,700]]
-coord_mayak = [[10,10],[1270,10],[200,700]]
-# coord_mayak = [[10,10],[1270,700]]
-
-marker_coordinates = [200-5, 220-5]
-
-# canvas_marker.place(x=coord_mayak[0][0], y=coord_mayak[0][1])
-# canvas_marker1.place(x=coord_mayak[1][0], y=coord_mayak[1][1])
-# canvas_marker2.place(x=coord_mayak[2][0], y=coord_mayak[2][1])
-# canvas_marker3.place(x=coord_mayak[3][0], y=coord_mayak[3][1])
+# coord_mayak = [[10,10],[1270,10],[10,700],[1270,300]] # - для Д 4 маяка по углам
+# coord_mayak = [[10,360],[1270,360],[640,10],[640,720]] # - для Д 4 маяка на серединах стен
+# coord_mayak = [[10,10],[1270,10],[200,700]] #- для Д 3 маяка
+# coord_mayak = [[10,10],[1270,700]] # - для ДУ 2 маяка по углам
+coord_mayak = [[30,110],[110,30],[70,650],[1250,630],[1170,710],[1210,70]] # - для ДУ 6 маяка
+# coord_mayak = [[10,360],[1270,360]] # - для ДУ 2 маяка по бокам
 
 
-# Target Setup
-# canvas_target.place(x=970-5, y=310-5)
-target_coordinates = [970-5, 310-5]
-
-# canvas_marker.bind('<B1-Motion>', drag)
-# canvas_marker1.bind('<B1-Motion>', drag)
-# canvas_marker2.bind('<B1-Motion>', drag)
-# canvas_marker3.bind('<B1-Motion>', drag)
-# canvas_target.bind('<B1-Motion>', drag2)
-# canvas.bind('<Button-2>', mmotion)
-# canvas.bind('<Button-3>', edges_print)
+for i in range(len(coord_mayak)):
+    for j in range(len(coord_mayak[0][:])):
+        coord_mayak[i][j] += 0.001
 
 #координаты коробки в центре и её отрисовка
 nw = Edges(480, 500, 800, 500)
@@ -219,20 +130,9 @@ se = Edges(-1, 721, 1281, 721)
 ee = Edges(1281, 721, 1281, -1)
 
 edge_lines = [ne, we, se, ee, nw, ww, sw, ew]
-points = []
-
-calculating_visibility(marker_coordinates[0], marker_coordinates[1], 300, edge_lines, points)
-
-points = sorted(points, key=lambda x: x.line_angle)
 
 
-
-
-
-triangles = []
-visibility_bool = 0
-
-
+#отрисовка сетки
 for i in range(0, 720, n):
     canvas.create_line(0, i, 1280, i)
 for i in range(0, 1280, m):
@@ -242,17 +142,20 @@ pointvisx =[]
 pointvisy =[]
 vidimost = []
 R_dal = []
+#заполнение векторов координат сетки, которые находятся в комнате
 for i in range(0,int(720/n)):
     for j in range(0,int(1280/m)):
-        if not((j*n<=nw.ex) and (j*n>=nw.sx) and (i*m<=ew.ey) and (i*m>=ew.sy)):
-            pointvisx.append(j*n)
-            pointvisy.append(i*m)
-            R_dal.append(0)
-            vidimost.append(0)
-            canvas_marker = Canvas(tk, width=5, height=5)
-            # canvas_marker.create_rectangle(0, 0, 5, 5, fill='pink', width=0, outline='black')
-            # canvas_marker.place(x=j*n, y=i*m,anchor=CENTER)
-bool_number_mayak = np.zeros((len(pointvisx),4))
+        pointvisx.append(j*n)
+        pointvisy.append(i*m)
+        R_dal.append(0)
+        vidimost.append(0)
+        canvas_marker = Canvas(tk, width=5, height=5)
+        # canvas_marker.create_rectangle(0, 0, 5, 5, fill='pink', width=0, outline='black')
+        # canvas_marker.place(x=j*n, y=i*m,anchor=CENTER)
+
+bool_number_mayak = np.zeros((len(pointvisx),len(coord_mayak)))
+
+#цикл проверки каждой точкой видимости каждого маяка
 for i in range(len(coord_mayak)):
     points = []
     calculating_visibility(coord_mayak[i][0], coord_mayak[i][1], 300, edge_lines, points)
@@ -289,6 +192,8 @@ for i in range(len(coord_mayak)):
         if visibility_bool == True:
             vidimost[j] += 1
             bool_number_mayak[j][i] = 1
+        if((pointvisx[j]<=nw.ex) and (pointvisx[j]>=nw.sx) and (pointvisy[j]<=ew.ey) and (pointvisy[j]>=ew.sy)):
+            vidimost[j] = 0
 
 number_mayak = []
 for j in range(len(pointvisx)):
@@ -303,11 +208,12 @@ for j in range(len(pointvisx)):
 
 pointnecx = [] # координаты маяков видимых как минимум min_number_mayak маяками
 pointnecy = []
-word = input("Выберите метод расчета: Д - дальномерный, УД - дальномерный-уголомерный")
+word = input("Выберите метод расчета: Д - дальномерный, УД - дальномерный-уголомерный: ")
+# word = 'УД'
 if word == 'Д':
     min_number_mayak = 3 #минимальное кол-во маяков, необходимое для определения координаты
 if word == 'УД':
-    min_number_mayak = 2 #минимальное кол-во маяков, необходимое для определения координаты
+    min_number_mayak = 1 #минимальное кол-во маяков, необходимое для определения координаты
 coord_mayak_2 = []
 winner_1 = []
 Hx_dots = []
@@ -317,26 +223,32 @@ geom_f = []
 #         pointnecx.append(pointvisx[i])
 #         pointnecy.append(pointvisy[i])
 
+print(min_number_mayak)
 for i in range(len(pointvisx)):
     coord_mayak_2.append([])
     for j in number_mayak[i]:
         coord_mayak_2[i].append(coord_mayak[j])
+
 
     if word == 'Д':
         if vidimost[i] >= min_number_mayak:
             # R_dal[i] = fx_dal_ideal([pointnecx[i],pointnecy[i]], coord_mayak_2[i])
             Hx_dots = Hx_dal([pointvisx[i],pointvisy[i]], coord_mayak_2[i])
             multi = np.dot(Hx_dots.T,Hx_dots)
-            inv_Hx = np.linalg.pinv(multi)
+            print(i, ' матрица, определитель: ', np.linalg.det(multi))
+            inv_Hx = np.linalg.inv(multi)
             geom_f.append(sqrt(np.trace(inv_Hx)))
         else:
             geom_f.append(0)
     if word == 'УД':
         if vidimost[i] >= min_number_mayak:
+            #TODO Разобраться в сингулярной матрице, определители порядка 10^-16
+
             # R_dal[i] = fx_angle_dal_ideal([pointnecx[i],pointnecy[i]], coord_mayak_2[i])
             Hx_dots = Hx_angle_dal([pointvisx[i],pointvisy[i]], coord_mayak_2[i])
             multi = np.dot(Hx_dots.T,Hx_dots)
-            inv_Hx = np.linalg.pinv(multi)
+            print(i,' матрица, определитель: ', np.linalg.det(multi))
+            inv_Hx = np.linalg.inv(multi)
             geom_f.append(sqrt(np.trace(inv_Hx)))
         else:
             geom_f.append(0)
@@ -359,6 +271,10 @@ for j in range(len(pointvisx)):
     if vidimost[j] == 4:
         canvas_vidim = Canvas(tk, width=10, height=10)
         canvas_vidim.create_rectangle(0, 0, 10, 10, fill='purple')
+        canvas_vidim.place(x=pointvisx[j], y=pointvisy[j],anchor=CENTER)
+    if vidimost[j] == 5:
+        canvas_vidim = Canvas(tk, width=10, height=10)
+        canvas_vidim.create_rectangle(0, 0, 10, 10, fill='pink')
         canvas_vidim.place(x=pointvisx[j], y=pointvisy[j],anchor=CENTER)
     # if vidimost[j] == q:
     #     canvas_vidim = Canvas(tk, width=10, height=10)
@@ -389,8 +305,16 @@ my_cmap = plt.get_cmap('magma')
 pointvisx = np.array(pointvisx)
 pointvisy = np.array(pointvisy)
 Z = np.array(geom_f).astype('float')
+sum_Z = 0
+k = 0
+for i in range(len(geom_f)):
+    if geom_f[i] != 0:
+        sum_Z += geom_f[i]
+        k += 1
 
+mean_Z = sum_Z/k
 
+print('Средний геометрический фактор по комнате: ',mean_Z)
 
 ax.plot_trisurf(pointvisx, pointvisy, Z, cmap = my_cmap, edgecolor = 'none')
 plt.show()

@@ -325,13 +325,14 @@ def Hx_angle_dal(x_prev,x_sat):
     :param x_sat:
     :return:
     '''
-    gradMatrix = np.zeros((len(list(x_sat)), 2))
+    gradMatrix = np.zeros((len(list(x_sat)), 4))
     for i in range(len(list(x_sat))):
         #corner=atan2((x_sat[i][1]-x_prev[1]),(x_sat[i][0]-x_prev[0]))
-        gradMatrix[i][0]=((x_sat[i][1]-x_prev[1])/(x_sat[i][0]**2-2*x_sat[i][0]*x_prev[0]+x_prev[0]**2+x_sat[i][1]**2-2*x_sat[i][1]*x_prev[1]+x_prev[1]**2))+(x_prev[0]-x_sat[i][0])/ (np.sqrt((x_prev[0]-x_sat[i][0])**2+(x_prev[1]-x_sat[i][1])**2))
-        gradMatrix[i][1]=((x_prev[0]-x_sat[i][0])/((x_sat[i][0]**2-2*x_sat[i][0]*x_prev[0]+x_prev[0]**2+x_sat[i][1]**2-2*x_sat[i][1]*x_prev[1]+x_prev[1]**2)))+(x_prev[1] - x_sat[i][1]) / (np.sqrt((x_prev[0] - x_sat[i][0]) ** 2 + (x_prev[1] - x_sat[i][1]) ** 2))
-        # gradMatrix[i][2]=(x_prev[0]-x_sat[i][0])/ (np.sqrt((x_prev[0]-x_sat[i][0])**2+(x_prev[1]-x_sat[i][1])**2))
-        # gradMatrix[i][3]=(x_prev[1] - x_sat[i][1]) / (np.sqrt((x_prev[0] - x_sat[i][0]) ** 2 + (x_prev[1] - x_sat[i][1]) ** 2))
+        gradMatrix[i][0] = (x_prev[0] - x_sat[i][0]) / (np.sqrt((x_prev[0] - x_sat[i][0]) ** 2 + (x_prev[1] - x_sat[i][1]) ** 2))
+        gradMatrix[i][1]=((x_sat[i][1]-x_prev[1])/(x_sat[i][0]**2-2*x_sat[i][0]*x_prev[0]+x_prev[0]**2+x_sat[i][1]**2-2*x_sat[i][1]*x_prev[1]+x_prev[1]**2))+(x_prev[0]-x_sat[i][0])/ (np.sqrt((x_prev[0]-x_sat[i][0])**2+(x_prev[1]-x_sat[i][1])**2))
+        gradMatrix[i][2]=(x_prev[1] - x_sat[i][1]) / (np.sqrt((x_prev[0] - x_sat[i][0]) ** 2 + (x_prev[1] - x_sat[i][1]) ** 2))
+        gradMatrix[i][3]=((x_prev[0]-x_sat[i][0])/((x_sat[i][0]**2-2*x_sat[i][0]*x_prev[0]+x_prev[0]**2+x_sat[i][1]**2-2*x_sat[i][1]*x_prev[1]+x_prev[1]**2)))+(x_prev[1] - x_sat[i][1]) / (np.sqrt((x_prev[0] - x_sat[i][0]) ** 2 + (x_prev[1] - x_sat[i][1]) ** 2))
+
 
     return gradMatrix
 
