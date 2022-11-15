@@ -82,8 +82,8 @@ tk.title('Mark Casting')
 tk.geometry('1280x720')
 tk.resizable(False, False)
 
-n = 40
-m = 40
+n = 20
+m = 20
 
 # 1 in code == 1 sm
 ln = [0, 0, 1280, 0]     # NORTH LINE
@@ -102,11 +102,11 @@ canvas.create_line((ls[0]), (ls[1]), (ls[2]), (ls[3]), width=3, fill='black')
 canvas.create_line(le[0], le[1], (le[2]), (le[3]), width=3, fill='black')
 
 # Marker setups
-# coord_mayak = [[10,10],[1270,10],[10,700],[1270,300]] # - для Д 4 маяка по углам
+# coord_mayak = [[10,10],[1270,10],[10,700],[1270,700]] # - для Д 4 маяка по углам
 # coord_mayak = [[10,360],[1270,360],[640,10],[640,720]] # - для Д 4 маяка на серединах стен
 # coord_mayak = [[10,10],[1270,10],[200,700]] #- для Д 3 маяка
 # coord_mayak = [[10,10],[1270,700]] # - для ДУ 2 маяка по углам
-coord_mayak = [[30,110],[110,30],[70,650],[1250,630],[1170,710],[1210,70]] # - для ДУ 6 маяка
+coord_mayak = [[20,100],[100,20],[60,660],[1260,620],[1180,700],[1220,60]] # - для ДУ 6 маяка
 # coord_mayak = [[10,360],[1270,360]] # - для ДУ 2 маяка по бокам
 
 
@@ -208,10 +208,13 @@ for j in range(len(pointvisx)):
 
 pointnecx = [] # координаты маяков видимых как минимум min_number_mayak маяками
 pointnecy = []
-word = input("Выберите метод расчета: Д - дальномерный, УД - дальномерный-уголомерный: ")
-# word = 'УД'
-if word == 'Д':
-    min_number_mayak = 3 #минимальное кол-во маяков, необходимое для определения координаты
+print(("Выберите метод расчета: Д - дальномерный, УД - дальномерный-уголомерный, "))
+word = input("У - угломерный, РД - разностно-дальномерный, УРД - угломерно-разностнодальномерный: ")
+# word = 'УРД'
+if word == 'РД':
+    min_number_mayak = 3
+if word == 'Д' or word == 'У'or word == 'УРД':
+    min_number_mayak = 2 #минимальное кол-во маяков, необходимое для определения координаты
 if word == 'УД':
     min_number_mayak = 1 #минимальное кол-во маяков, необходимое для определения координаты
 coord_mayak_2 = []
@@ -230,16 +233,50 @@ for i in range(len(pointvisx)):
         coord_mayak_2[i].append(coord_mayak[j])
 
 
-    if word == 'Д':
-        if vidimost[i] >= min_number_mayak:
-            # R_dal[i] = fx_dal_ideal([pointnecx[i],pointnecy[i]], coord_mayak_2[i])
-            Hx_dots = Hx_dal([pointvisx[i],pointvisy[i]], coord_mayak_2[i])
-            multi = np.dot(Hx_dots.T,Hx_dots)
-            print(i, ' матрица, определитель: ', np.linalg.det(multi))
-            inv_Hx = np.linalg.inv(multi)
-            geom_f.append(sqrt(np.trace(inv_Hx)))
-        else:
-            geom_f.append(0)
+        if word == 'Д':
+            if vidimost[i] >= min_number_mayak:
+                # R_dal[i] = fx_dal_ideal([pointnecx[i],pointnecy[i]], coord_mayak_2[i])
+                Hx_dots = Hx_dal([pointvisx[i], pointvisy[i]], coord_mayak_2[i])
+                multi = np.dot(Hx_dots.T, Hx_dots)
+                print(i, ' матрица, определитель: ', np.linalg.det(multi))
+                inv_Hx = np.linalg.inv(multi)
+                geom_f.append(sqrt(np.trace(inv_Hx)))
+            else:
+                geom_f.append(0)
+
+        if word == 'РД':
+            if vidimost[i] >= min_number_mayak:
+                # R_dal[i] = fx_dal_ideal([pointnecx[i],pointnecy[i]], coord_mayak_2[i])
+                Hx_dots = Hx_dal_difference([pointvisx[i], pointvisy[i]], coord_mayak_2[i])
+                multi = np.dot(Hx_dots.T, Hx_dots)
+                print(i, ' матрица, определитель: ', np.linalg.det(multi))
+                inv_Hx = np.linalg.inv(multi)
+                geom_f.append(sqrt(np.trace(inv_Hx)))
+            else:
+                geom_f.append(0)
+
+        if word == 'УРД':
+            if vidimost[i] >= min_number_mayak:
+                # R_dal[i] = fx_dal_ideal([pointnecx[i],pointnecy[i]], coord_mayak_2[i])
+                Hx_dots = Hx_angle_dal_difference([pointvisx[i], pointvisy[i]], coord_mayak_2[i])
+                multi = np.dot(Hx_dots.T, Hx_dots)
+                print(i, ' матрица, определитель: ', np.linalg.det(multi))
+                inv_Hx = np.linalg.inv(multi)
+                geom_f.append(sqrt(np.trace(inv_Hx)))
+            else:
+                geom_f.append(0)
+
+        if word == 'У':
+            if vidimost[i] >= min_number_mayak:
+                # R_dal[i] = fx_angle([pointnecx[i],pointnecy[i]], coord_mayak_2[i])
+                Hx_dots = Hx_angle([pointvisx[i], pointvisy[i]], coord_mayak_2[i])
+                multi = np.dot(Hx_dots.T, Hx_dots)
+                print(i, ' матрица, определитель: ', np.linalg.det(multi))
+                inv_Hx = np.linalg.inv(multi)
+                geom_f.append(sqrt(np.trace(inv_Hx)))
+            else:
+                geom_f.append(0)
+
     if word == 'УД':
         if vidimost[i] >= min_number_mayak:
             #TODO Разобраться в сингулярной матрице, определители порядка 10^-16
@@ -317,6 +354,9 @@ mean_Z = sum_Z/k
 print('Средний геометрический фактор по комнате: ',mean_Z)
 
 ax.plot_trisurf(pointvisx, pointvisy, Z, cmap = my_cmap, edgecolor = 'none')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('DOP')
 plt.show()
 
 tk.mainloop()
