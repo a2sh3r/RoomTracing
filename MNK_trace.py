@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import matplotlib.pyplot as plt
 from math import *
@@ -239,6 +241,22 @@ def Hx_dal(x_prev,x_sat):
 
     return H
 
+def Hx_pseudo_dal(x_prev,x_sat):
+    '''
+    Градиентная матрица
+    :param x_prev:
+    :param x_sat:
+    :return:
+    '''
+    #ДАЛЬНОМЕРНЫЙ
+    H = np.zeros((len(list(x_sat)), 3))
+    for i in range(len(list(x_sat))):
+        H[i][0] = -(x_sat[i][0] - x_prev[0]) / np.sqrt((x_prev[0]-x_sat[i][0])**2+(x_prev[1]-x_sat[i][1])**2)
+        H[i][1] = -(x_sat[i][1] - x_prev[1]) / np.sqrt((x_prev[0]-x_sat[i][0])**2+(x_prev[1]-x_sat[i][1])**2)
+        H[i][2] = 3e8
+
+
+    return H
 
 # РАЗНОСТНО-ДАЛЬНОМЕРНЫЙ
 def Hx_dal_difference(x_prev,x_sat):
@@ -267,9 +285,7 @@ def Hx_dal_difference(x_prev,x_sat):
                    if l>6: print("error")
                except:
                    print("error")
-                   gradMatrix[l] = np.zeros(x_prev.shape)
-                   l += 1
-                   if l > 6: print("error")
+
 
     return gradMatrix
 
@@ -286,8 +302,8 @@ def Hx_angle(x_prev,x_sat):
     gradMatrix = np.zeros((len(list(x_sat)), 2))
     for i in range(len(list(x_sat))):
         #corner=atan2((x_sat[i][1]-x_prev[1]),(x_sat[i][0]-x_prev[0]))
-        gradMatrix[i][0]=(x_sat[i][1]-x_prev[1])/(x_sat[i][0]**2-2*x_sat[i][0]*x_prev[0]+x_prev[0]**2+x_sat[i][1]**2-2*x_sat[i][1]*x_prev[1]+x_prev[1]**2)
-        gradMatrix[i][1]=(x_prev[0]-x_sat[i][0])/((x_sat[i][0]**2-2*x_sat[i][0]*x_prev[0]+x_prev[0]**2+x_sat[i][1]**2-2*x_sat[i][1]*x_prev[1]+x_prev[1]**2))
+        gradMatrix[i][0]= (x_sat[i][1]-x_prev[1])/(x_sat[i][0]**2-2*x_sat[i][0]*x_prev[0]+x_prev[0]**2+x_sat[i][1]**2-2*x_sat[i][1]*x_prev[1]+x_prev[1]**2)*180/math.pi
+        gradMatrix[i][1]= (x_prev[0]-x_sat[i][0])/((x_sat[i][0]**2-2*x_sat[i][0]*x_prev[0]+x_prev[0]**2+x_sat[i][1]**2-2*x_sat[i][1]*x_prev[1]+x_prev[1]**2))*180/math.pi
 
     return gradMatrix
 
@@ -331,9 +347,9 @@ def Hx_angle_dal(x_prev,x_sat):
     for i in range(len(list(x_sat))):
         #corner=atan2((x_sat[i][1]-x_prev[1]),(x_sat[i][0]-x_prev[0]))
         gradMatrix[j][0] = (x_prev[0] - x_sat[i][0]) / (np.sqrt((x_prev[0] - x_sat[i][0]) ** 2 + (x_prev[1] - x_sat[i][1]) ** 2))
-        gradMatrix[i][0]=((x_sat[i][1]-x_prev[1])/(x_sat[i][0]**2-2*x_sat[i][0]*x_prev[0]+x_prev[0]**2+x_sat[i][1]**2-2*x_sat[i][1]*x_prev[1]+x_prev[1]**2))+(x_prev[0]-x_sat[i][0])/ (np.sqrt((x_prev[0]-x_sat[i][0])**2+(x_prev[1]-x_sat[i][1])**2))
+        gradMatrix[i][0]=((x_sat[i][1]-x_prev[1])/(x_sat[i][0]**2-2*x_sat[i][0]*x_prev[0]+x_prev[0]**2+x_sat[i][1]**2-2*x_sat[i][1]*x_prev[1]+x_prev[1]**2 + 0.001))*180/math.pi
         gradMatrix[j][1]= (x_prev[1] - x_sat[i][1]) / (np.sqrt((x_prev[0] - x_sat[i][0]) ** 2 + (x_prev[1] - x_sat[i][1]) ** 2))
-        gradMatrix[i][1]=((x_prev[0]-x_sat[i][0])/((x_sat[i][0]**2-2*x_sat[i][0]*x_prev[0]+x_prev[0]**2+x_sat[i][1]**2-2*x_sat[i][1]*x_prev[1]+x_prev[1]**2)))+(x_prev[1] - x_sat[i][1]) / (np.sqrt((x_prev[0] - x_sat[i][0]) ** 2 + (x_prev[1] - x_sat[i][1]) ** 2))
+        gradMatrix[i][1]=((x_prev[0]-x_sat[i][0])/((x_sat[i][0]**2-2*x_sat[i][0]*x_prev[0]+x_prev[0]**2+x_sat[i][1]**2-2*x_sat[i][1]*x_prev[1]+x_prev[1]**2+ 0.001)))*180/math.pi
         i +=2
         j+=2
 
@@ -376,10 +392,10 @@ def Hx_angle_dal_difference(x_prev,x_sat):
     for i in range(len(list(x_sat))):
         gradMatrix[l][0] = (x_sat[i][1] - x_prev[1]) / (
                     x_sat[i][0] ** 2 - 2 * x_sat[i][0] * x_prev[0] + x_prev[0] ** 2 + x_sat[i][1] ** 2 - 2 * x_sat[i][
-                1] * x_prev[1] + x_prev[1] ** 2)
+                1] * x_prev[1] + x_prev[1] ** 2) *180/math.pi
         gradMatrix[l][1] = (x_prev[0] - x_sat[i][0]) / ((
                     x_sat[i][0] ** 2 - 2 * x_sat[i][0] * x_prev[0] + x_prev[0] ** 2 + x_sat[i][1] ** 2 - 2 * x_sat[i][
-                1] * x_prev[1] + x_prev[1] ** 2))
+                1] * x_prev[1] + x_prev[1] ** 2)) *180/math.pi
         l+=1
 
     return gradMatrix
